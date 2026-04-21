@@ -9,51 +9,88 @@ document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
   });
 });
 
-// Active nav link on scroll
-window.addEventListener("scroll", () => {
-  const sections = document.querySelectorAll("section");
-  let current = "";
+// ===== ACTIVE NAV LINK (IntersectionObserver — reliable even at page bottom) =====
+const setupActiveNav = () => {
+  const sections = document.querySelectorAll('section[id]');
+  const navLinks = document.querySelectorAll('.nav-link');
 
-  sections.forEach((section) => {
-    const sectionTop = section.offsetTop;
-    const sectionHeight = section.clientHeight;
-    if (pageYOffset >= sectionTop - 200) {
-      current = section.getAttribute("id");
+  const setActive = (id) => {
+    navLinks.forEach((link) => {
+      link.classList.remove('active');
+      if (link.getAttribute('href') === `#${id}`) {
+        link.classList.add('active');
+      }
+    });
+  };
+
+  // Use a large rootMargin so the section above the fold is marked active
+  const navObserver = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          setActive(entry.target.getAttribute('id'));
+        }
+      });
+    },
+    {
+      // Top of viewport offset matches navbar height; bottom offset forces
+      // the LAST section to activate even when it never fills the viewport
+      rootMargin: '-80px 0px -40% 0px',
+      threshold: 0,
     }
-  });
+  );
 
-  document.querySelectorAll(".nav-link").forEach((link) => {
-    link.classList.remove("active");
-    if (link.getAttribute("href") === `#${current}`) {
-      link.classList.add("active");
-    }
-  });
-});
+  sections.forEach((s) => navObserver.observe(s));
 
-// ===== SCROLL ANIMATIONS =====
-const observerOptions = {
-  threshold: 0.1,
-  rootMargin: "0px 0px -100px 0px",
+  // Also set active immediately when a nav link is clicked
+  navLinks.forEach((link) => {
+    link.addEventListener('click', function () {
+      navLinks.forEach((l) => l.classList.remove('active'));
+      this.classList.add('active');
+    });
+  });
 };
 
-const observer = new IntersectionObserver((entries) => {
-  entries.forEach((entry) => {
-    if (entry.isIntersecting) {
-      entry.target.style.animation = `fadeInUp 0.8s ease forwards`;
-      observer.unobserve(entry.target);
-    }
-  });
-}, observerOptions);
+setupActiveNav();
 
-// Observe elements for animation
-document
-  .querySelectorAll(
-    ".project-card, .detail-card, .skill-category, .timeline-item",
-  )
-  .forEach((el) => {
-    el.style.opacity = "0";
-    observer.observe(el);
+
+// ===== SCROLL REVEAL SYSTEM =====
+// Targets elements with [data-reveal] and [data-reveal-title] attrs.
+// CSS handles the hidden/transform states; JS just toggles .revealed.
+const setupScrollReveal = () => {
+  const revealObserver = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('revealed');
+          revealObserver.unobserve(entry.target); // only animate once
+        }
+      });
+    },
+    {
+      threshold: 0.12,
+      rootMargin: '0px 0px -60px 0px',
+    }
+  );
+
+  // Observe all [data-reveal] elements
+  document.querySelectorAll('[data-reveal]').forEach((el) => {
+    revealObserver.observe(el);
   });
+
+  // Observe all [data-reveal-title] elements
+  document.querySelectorAll('[data-reveal-title]').forEach((el) => {
+    revealObserver.observe(el);
+  });
+};
+
+// Run after DOM is ready
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', setupScrollReveal);
+} else {
+  setupScrollReveal();
+}
+
 
 // ===== CONTACT ME BUTTON =====
 document.querySelector(".btn-primary-custom")?.addEventListener("click", () => {
@@ -61,19 +98,8 @@ document.querySelector(".btn-primary-custom")?.addEventListener("click", () => {
   contactSection.scrollIntoView({ behavior: "smooth" });
 });
 
-// ===== PARALLAX EFFECT =====
-window.addEventListener("scroll", () => {
-  const scrolled = window.pageYOffset;
-  const parallaxElements = document.querySelectorAll(
-    ".hero::before, .hero::after",
-  );
+// Parallax removed — it caused hero section to translate off-screen during scroll.
 
-  if (parallaxElements.length > 0) {
-    // Add subtle parallax to hero section
-    document.querySelector(".hero").style.transform =
-      `translateY(${scrolled * 0.5}px)`;
-  }
-});
 
 // ===== FORM HANDLING (For future contact form) =====
 const contactForm = document.querySelector(".contact-form");
@@ -87,21 +113,20 @@ if (contactForm) {
 }
 
 // ===== MOBILE MENU HANDLING =====
-const navbarToggler = document.querySelector(".navbar-toggler");
-const navItems = document.querySelector(".nav-items");
+const closeMobileNav = () => {
+  // Use Bootstrap 5 Collapse API to properly close the navbar
+  const navbarCollapseEl = document.getElementById('navbarNav');
+  if (navbarCollapseEl && navbarCollapseEl.classList.contains('show')) {
+    const bsCollapse = bootstrap.Collapse.getOrCreateInstance(navbarCollapseEl);
+    bsCollapse.hide();
+  }
+};
 
-if (navbarToggler) {
-  navbarToggler.addEventListener("click", () => {
-    navItems?.classList.toggle("show");
-  });
+// Close nav when any nav link is clicked (mobile)
+document.querySelectorAll('.nav-link').forEach((link) => {
+  link.addEventListener('click', closeMobileNav);
+});
 
-  // Close menu when a link is clicked
-  document.querySelectorAll(".nav-link").forEach((link) => {
-    link.addEventListener("click", () => {
-      navItems?.classList.remove("show");
-    });
-  });
-}
 
 // ===== DARK MODE TOGGLE (Optional) =====
 const createDarkModeToggle = () => {
@@ -133,21 +158,8 @@ const typeAnimation = () => {
 // Initialize type animation when page loads
 window.addEventListener("load", typeAnimation);
 
-// ===== REVEAL ANIMATIONS ON SCROLL =====
-const revealElements = () => {
-  const reveals = document.querySelectorAll("section");
-  reveals.forEach((reveal) => {
-    const windowHeight = window.innerHeight;
-    const elementTop = reveal.getBoundingClientRect().top;
+// Reveal elements on scroll — now handled by setupScrollReveal() above
 
-    if (elementTop < windowHeight) {
-      reveal.style.opacity = "1";
-    }
-  });
-};
-
-window.addEventListener("scroll", revealElements);
-window.addEventListener("load", revealElements);
 
 // ===== SMOOTH SCROLL TO TOP =====
 const scrollToTop = () => {
@@ -157,13 +169,35 @@ const scrollToTop = () => {
   }
 };
 
-// ===== NAVBAR BACKGROUND ON SCROLL =====
-window.addEventListener("scroll", () => {
-  const navbar = document.querySelector(".navbar");
-  if (window.scrollY > 50) {
-    navbar.style.boxShadow = "0 2px 20px rgba(124, 42, 232, 0.1)";
-  } else {
-    navbar.style.boxShadow = "none";
+// ===== NAVBAR SCROLL EFFECTS + PROGRESS BAR + SCROLL INDICATOR =====
+const navbar = document.querySelector('.navbar');
+const progressBar = document.getElementById('scroll-progress');
+const scrollIndicator = document.getElementById('scrollIndicator');
+
+window.addEventListener('scroll', () => {
+  const scrollTop = window.scrollY;
+  const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+  const progress = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+
+  // Update scroll progress bar
+  if (progressBar) progressBar.style.width = progress + '%';
+
+  // Toggle scrolled class for deeper glass effect
+  if (navbar) {
+    if (scrollTop > 40) {
+      navbar.classList.add('scrolled');
+    } else {
+      navbar.classList.remove('scrolled');
+    }
+  }
+
+  // Hide scroll indicator once user starts scrolling
+  if (scrollIndicator) {
+    if (scrollTop > 80) {
+      scrollIndicator.classList.add('hidden');
+    } else {
+      scrollIndicator.classList.remove('hidden');
+    }
   }
 });
 

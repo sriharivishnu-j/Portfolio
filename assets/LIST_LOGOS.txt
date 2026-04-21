@@ -1,0 +1,16 @@
+DOWNLOADED LOGOS:
+================
+anthropic-logo.png
+ascendion-logo.png
+aws-logo.png
+capgemini-logo.svg
+coursera-logo.svg
+ford-motors-logo.png
+github-logo.png
+google-logo.png
+ibm-logo.svg
+iisc-logo.png
+linkedin-learning-logo.png
+marriott-logo.png
+microsoft-logo.svg
+reno-plas-logo.png

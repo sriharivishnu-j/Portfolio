@@ -1,0 +1,53 @@
+{
+  "name": "portfolio-2026",
+  "version": "1.0.0",
+  "description": "A modern, responsive portfolio website",
+  "author": "Sriharivishnu Janakiraman <j.sriharivishnu@gmail.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sriharivishnu-j/Portfolio-2026.git"
+  },
+  "keywords": [
+    "portfolio",
+    "developer",
+    "responsive",
+    "github-pages",
+    "html",
+    "css",
+    "javascript"
+  ],
+  "scripts": {
+    "serve": "python -m http.server 8000",
+    "serve-node": "npx http-server"
+  },
+  "requirements": {
+    "html": "HTML5",
+    "css": "CSS3 (custom, Bootstrap 5 CDN)",
+    "javascript": "Vanilla JavaScript (ES6+)",
+    "frameworks": "None - pure HTML/CSS/JS",
+    "dependencies": [
+      "Bootstrap 5 (CDN)",
+      "Font Awesome 6 (CDN)"
+    ]
+  },
+  "deployment": {
+    "platform": "GitHub Pages",
+    "cost": "Free",
+    "domain": "sriharivishnu-j.github.io/Portfolio-2026"
+  },
+  "bugs": {
+    "url": "https://github.com/sriharivishnu-j/Portfolio-2026/issues"
+  },
+  "homepage": "https://sriharivishnu-j.github.io/Portfolio-2026",
+  "features": [
+    "Responsive Design",
+    "Dark Theme",
+    "Smooth Animations",
+    "No Build Process",
+    "Fast Loading",
+    "Mobile Optimized",
+    "Keyboard Navigation",
+    "SEO Friendly"
+  ]
+}

@@ -1,3 +1,68 @@
+// ===== MOBILE TOUCH FIX - PREVENT UNWANTED DRAGGING AND SCROLLING =====
+(function () {
+  let touchStartX = 0;
+  let touchStartY = 0;
+  let isScrolling = false;
+
+  document.addEventListener(
+    "touchstart",
+    (e) => {
+      touchStartX = e.touches[0].clientX;
+      touchStartY = e.touches[0].clientY;
+      isScrolling = false;
+    },
+    false,
+  );
+
+  document.addEventListener(
+    "touchmove",
+    (e) => {
+      const touchX = e.touches[0].clientX;
+      const touchY = e.touches[0].clientY;
+
+      const deltaX = Math.abs(touchX - touchStartX);
+      const deltaY = Math.abs(touchY - touchStartY);
+
+      // Only allow vertical scrolling, prevent horizontal drag
+      if (deltaX > deltaY && deltaX > 10) {
+        e.preventDefault();
+      }
+
+      // Prevent pull-to-refresh on mobile
+      if (touchStartY < 100 && deltaY > 50) {
+        e.preventDefault();
+      }
+    },
+    { passive: false },
+  );
+
+  // Prevent pinch zoom
+  document.addEventListener(
+    "wheel",
+    (e) => {
+      if (e.ctrlKey || e.metaKey) {
+        e.preventDefault();
+      }
+    },
+    { passive: false },
+  );
+
+  // Prevent double-tap zoom
+  let lastTap = 0;
+  document.addEventListener(
+    "touchend",
+    (e) => {
+      const currentTime = new Date().getTime();
+      const tapLength = currentTime - lastTap;
+      if (tapLength < 500 && tapLength > 0) {
+        e.preventDefault();
+      }
+      lastTap = currentTime;
+    },
+    false,
+  );
+})();
+
 // ===== SMOOTH SCROLLING & NAVIGATION =====
 document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
   anchor.addEventListener("click", function (e) {
